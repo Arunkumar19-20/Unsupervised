@@ -105,18 +105,19 @@ if st.button("🔮 Predict Cluster"):
 
     st.success(f"✅ Customer belongs to **Cluster {cluster}**")
 
-   cluster_info = {
-    0: "🛒 Budget Customers",
-    1: "💎 Premium (Rich) Customers",
-    2: "🎯 Target Customers",
-    3: "🧠 Careful High-Income Customers",
-    4: "⚖️ Average Customers"
-}
-
+    # Business-friendly cluster names
+    cluster_info = {
+        0: "🛒 Budget Customers",
+        1: "💎 Premium (Rich) Customers",
+        2: "🎯 Target Customers",
+        3: "🧠 Careful High-Income Customers",
+        4: "⚖️ Average Customers"
+    }
 
     st.info(cluster_info.get(cluster, "Cluster description not available"))
 
-    ''''''
+
+
 # ---------------- FOOTER ----------------
 st.markdown("---")
 st.caption("✨ K-Means Customer Segmentation | Streamlit UI Enhanced")
