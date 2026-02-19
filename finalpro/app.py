@@ -6,6 +6,7 @@
 import streamlit as st
 import pandas as pd
 import joblib
+import os
 
 # ==========================================================
 # Page Configuration
@@ -44,11 +45,10 @@ label {
 .card {
     background: rgba(255, 255, 255, 0.10);
     backdrop-filter: blur(18px);
-    padding: 40px 35px;   /* Increased padding */
+    padding: 40px 35px;
     border-radius: 20px;
     box-shadow: 0 0 25px rgba(0, 191, 255, 0.2);
 }
-
 
 /* KPI Cards */
 .kpi {
@@ -58,9 +58,8 @@ label {
     text-align: center;
     color: #ffffff;
     box-shadow: 0 0 20px rgba(0, 191, 255, 0.4);
-    margin-bottom: 25px;   /* Adds vertical spacing */
+    margin-bottom: 25px;
 }
-
 
 /* Inputs */
 .stNumberInput input {
@@ -98,15 +97,18 @@ st.markdown("<h4 style='text-align:center; color:#cbd5e1;'>Smart HR Analytics Da
 st.write("")
 
 # ==========================================================
-# Load Model Files
+# Load Model Files (DEPLOYMENT SAFE)
 # ==========================================================
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 try:
-    model = joblib.load("team8_employee_model.pkl")
-    scaler = joblib.load("team8_scaler.pkl")
-    feature_names = joblib.load("team8_feature_names.pkl")
-except:
-    st.error("❌ Model files not found! Keep all .pkl files in same folder.")
+    model = joblib.load(os.path.join(BASE_DIR, "team8_employee_model.pkl"))
+    scaler = joblib.load(os.path.join(BASE_DIR, "team8_scaler.pkl"))
+    feature_names = joblib.load(os.path.join(BASE_DIR, "team8_feature_names.pkl"))
+except Exception as e:
+    st.error("❌ Model files not found! Ensure all .pkl files are in the same folder as app.py")
+    st.write("Error:", e)
     st.stop()
 
 # ==========================================================
@@ -119,7 +121,6 @@ left, right = st.columns([2, 1])
 
 with left:
     st.markdown('<div class="card"><h3>Enter Employee Details</h3>', unsafe_allow_html=True)
-
 
     input_data = {}
     cols = st.columns(2)
@@ -141,7 +142,7 @@ with right:
 
     if predict:
         try:
-            # Scale
+            # Scale Input
             input_scaled = scaler.transform(input_df)
 
             # Predict
@@ -153,7 +154,7 @@ with right:
             else:
                 probability = 0.5
 
-            # Risk Logic
+            # Risk Classification
             if probability < 0.30:
                 risk = "Low"
                 recommendation = "Employee is stable. Maintain engagement & motivation."
@@ -167,7 +168,7 @@ with right:
                 recommendation = "Immediate HR intervention recommended."
                 color = "#ef4444"
 
-            # KPI Row
+            # KPI Display
             k1, k2 = st.columns(2)
 
             with k1:
@@ -194,10 +195,8 @@ with right:
             </div>
             """, unsafe_allow_html=True)
 
-            # Animated Progress
             st.progress(int(probability * 100))
 
-            # AI Recommendation
             st.success(f"🧠 AI Recommendation: {recommendation}")
 
         except Exception as e:
