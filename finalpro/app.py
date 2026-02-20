@@ -1,6 +1,6 @@
 # ==========================================================
 # TEAM 8 – Employee Attrition Prediction App
-# FINAL PROFESSIONAL HR VERSION
+# PREMIUM UI + PROFESSIONAL HR FORM
 # ==========================================================
 
 import streamlit as st
@@ -9,7 +9,7 @@ import joblib
 import os
 
 # ==========================================================
-# Page Config
+# Page Configuration
 # ==========================================================
 
 st.set_page_config(
@@ -19,11 +19,56 @@ st.set_page_config(
 )
 
 # ==========================================================
-# Simple Clean UI
+# Premium Dashboard CSS
 # ==========================================================
 
-st.title("🧠 AI Employee Attrition Predictor")
-st.subheader("Smart HR Analytics Dashboard")
+st.markdown("""
+<style>
+.stApp {
+    background: linear-gradient(135deg, #0f2027, #1c3b47, #274c5e);
+}
+h1, h2, h3, h4 {
+    color: white !important;
+}
+label {
+    color: #e2e8f0 !important;
+    font-weight: 500;
+}
+.card {
+    background: rgba(255,255,255,0.10);
+    backdrop-filter: blur(18px);
+    padding: 35px;
+    border-radius: 20px;
+    box-shadow: 0 0 25px rgba(0,191,255,0.2);
+}
+.kpi {
+    background: linear-gradient(145deg, #1e293b, #334155);
+    padding: 25px;
+    border-radius: 15px;
+    text-align: center;
+    color: white;
+    box-shadow: 0 0 20px rgba(0,191,255,0.4);
+    margin-bottom: 20px;
+}
+.stButton>button {
+    background: linear-gradient(90deg, #00c6ff, #0072ff);
+    color: white;
+    font-weight: bold;
+    border-radius: 12px;
+    height: 50px;
+    font-size: 18px;
+    border: none;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# ==========================================================
+# Header
+# ==========================================================
+
+st.markdown("<h1 style='text-align:center;'>🧠 AI Employee Attrition Predictor</h1>", unsafe_allow_html=True)
+st.markdown("<h4 style='text-align:center; color:#cbd5e1;'>Smart HR Analytics Dashboard</h4>", unsafe_allow_html=True)
+st.write("")
 
 # ==========================================================
 # Load Model Files
@@ -46,11 +91,11 @@ except Exception:
 left, right = st.columns([2,1])
 
 # ==========================================================
-# LEFT SIDE – PROFESSIONAL FORM
+# LEFT SIDE – PREMIUM HR FORM
 # ==========================================================
 
 with left:
-    st.subheader("📋 Employee Information")
+    st.markdown('<div class="card"><h3>📋 Employee Information</h3>', unsafe_allow_html=True)
 
     col1, col2 = st.columns(2)
 
@@ -69,7 +114,7 @@ with left:
         work_life = st.selectbox("Work Life Balance", [1,2,3,4])
 
     # ==========================================================
-    # Convert Categorical to Numeric (Must Match Training)
+    # Encoding Maps (Must Match Training Encoding)
     # ==========================================================
 
     department_map = {
@@ -116,12 +161,14 @@ with left:
 
     predict = st.button("🚀 Run AI Prediction")
 
+    st.markdown('</div>', unsafe_allow_html=True)
+
 # ==========================================================
-# RIGHT SIDE – AI INSIGHTS
+# RIGHT SIDE – PREMIUM AI INSIGHTS
 # ==========================================================
 
 with right:
-    st.subheader("📊 AI Insights")
+    st.markdown('<div class="card"><h3>📊 AI Insights</h3>', unsafe_allow_html=True)
 
     if predict:
 
@@ -132,23 +179,44 @@ with right:
         else:
             probability = 0.5
 
-        # Custom Threshold
         threshold = 0.30
         prediction = 1 if probability > threshold else 0
 
-        # Risk Levels
-        if probability < 0.25:
+        # Risk Levels adjusted for 0.30–0.38 range
+        if probability < 0.30:
             risk = "Low"
-        elif probability < 0.40:
+            color = "#16a34a"
+        elif probability < 0.35:
             risk = "Medium"
+            color = "#f59e0b"
         else:
             risk = "High"
+            color = "#ef4444"
 
-        st.write("### Prediction:", "Leave" if prediction==1 else "Stay")
-        st.write("### Risk Level:", risk)
-        st.write("### Attrition Probability:", f"{probability:.2%}")
+        st.markdown(f"""
+        <div class="kpi">
+            <h3>Prediction</h3>
+            <h2>{'Leave' if prediction==1 else 'Stay'}</h2>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown(f"""
+        <div class="kpi">
+            <h3>Risk Level</h3>
+            <h2 style='color:{color};'>{risk}</h2>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown(f"""
+        <div class="kpi">
+            <h3>Attrition Probability</h3>
+            <h2>{probability:.2%}</h2>
+        </div>
+        """, unsafe_allow_html=True)
 
         st.progress(int(probability * 100))
 
     else:
         st.write("Run prediction to see AI insights.")
+
+    st.markdown('</div>', unsafe_allow_html=True)
