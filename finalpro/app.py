@@ -1,6 +1,6 @@
 # ==========================================================
 # TEAM 8 – Employee Attrition Prediction App
-# PREMIUM UI + PROFESSIONAL HR FORM
+# PREMIUM UI + PROFESSIONAL HR FORM (FINAL FIXED VERSION)
 # ==========================================================
 
 import streamlit as st
@@ -81,7 +81,7 @@ try:
     scaler = joblib.load(os.path.join(BASE_DIR, "team8_scaler.pkl"))
     feature_names = joblib.load(os.path.join(BASE_DIR, "team8_feature_names.pkl"))
 except Exception:
-    st.error("❌ Model files not found!")
+    st.error("❌ Model files not found! Make sure .pkl files are in same folder.")
     st.stop()
 
 # ==========================================================
@@ -91,7 +91,7 @@ except Exception:
 left, right = st.columns([2,1])
 
 # ==========================================================
-# LEFT SIDE – PREMIUM HR FORM
+# LEFT SIDE – HR INPUT FORM
 # ==========================================================
 
 with left:
@@ -113,46 +113,26 @@ with left:
         environment_sat = st.selectbox("Environment Satisfaction", [1,2,3,4])
         work_life = st.selectbox("Work Life Balance", [1,2,3,4])
 
-    # ==========================================================
     # Encoding Maps (Must Match Training Encoding)
-    # ==========================================================
-
-    department_map = {
-        "Sales": 0,
-        "Research & Development": 1,
-        "Human Resources": 2
-    }
-
-    gender_map = {
-        "Male": 0,
-        "Female": 1
-    }
-
-    marital_map = {
-        "Single": 0,
-        "Married": 1,
-        "Divorced": 2
-    }
-
-    overtime_map = {
-        "No": 0,
-        "Yes": 1
-    }
+    department_map = {"Sales":0, "Research & Development":1, "Human Resources":2}
+    gender_map = {"Male":0, "Female":1}
+    marital_map = {"Single":0, "Married":1, "Divorced":2}
+    overtime_map = {"No":0, "Yes":1}
 
     input_data = {
         "Age": age,
-        "Department": department_map.get(department, 0),
-        "Gender": gender_map.get(gender, 0),
-        "MaritalStatus": marital_map.get(marital_status, 0),
+        "Department": department_map[department],
+        "Gender": gender_map[gender],
+        "MaritalStatus": marital_map[marital_status],
         "JobLevel": job_level,
         "MonthlyIncome": monthly_income,
         "YearsAtCompany": years_company,
-        "OverTime": overtime_map.get(overtime, 0),
+        "OverTime": overtime_map[overtime],
         "EnvironmentSatisfaction": environment_sat,
         "WorkLifeBalance": work_life
     }
 
-    # Fill missing features safely
+    # Fill missing selected features
     for feature in feature_names:
         if feature not in input_data:
             input_data[feature] = 0
@@ -164,7 +144,7 @@ with left:
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ==========================================================
-# RIGHT SIDE – PREMIUM AI INSIGHTS
+# RIGHT SIDE – AI INSIGHTS
 # ==========================================================
 
 with right:
@@ -179,20 +159,22 @@ with right:
         else:
             probability = 0.5
 
-        threshold = 0.30
-        prediction = 1 if probability > threshold else 0
+        # Threshold (adjustable if needed)
+        threshold = 0.50
+        prediction = 1 if probability >= threshold else 0
 
-        # Risk Levels adjusted for 0.30–0.38 range
-        if probability < 0.30:
+        # Risk Classification
+        if probability < 0.40:
             risk = "Low"
             color = "#16a34a"
-        elif probability < 0.35:
+        elif probability < 0.60:
             risk = "Medium"
             color = "#f59e0b"
         else:
             risk = "High"
             color = "#ef4444"
 
+        # Display Prediction
         st.markdown(f"""
         <div class="kpi">
             <h3>Prediction</h3>
