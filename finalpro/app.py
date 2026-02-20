@@ -1,6 +1,6 @@
 # ==========================================================
 # TEAM 8 – Employee Attrition Prediction App
-# FINAL VERSION (Adjusted Risk Logic)
+# FINAL SAFE VERSION (Dynamic Features)
 # ==========================================================
 
 import streamlit as st
@@ -78,7 +78,7 @@ try:
     model = joblib.load(os.path.join(BASE_DIR, "team8_employee_model.pkl"))
     scaler = joblib.load(os.path.join(BASE_DIR, "team8_scaler.pkl"))
     feature_names = joblib.load(os.path.join(BASE_DIR, "team8_feature_names.pkl"))
-except Exception:
+except Exception as e:
     st.error("❌ Model files not found! Keep all .pkl files in same folder.")
     st.stop()
 
@@ -89,7 +89,7 @@ except Exception:
 left, right = st.columns([2, 1])
 
 # ==========================================================
-# LEFT SIDE – DYNAMIC FORM
+# LEFT SIDE – DYNAMIC FORM (SAFE)
 # ==========================================================
 
 with left:
@@ -98,6 +98,7 @@ with left:
     input_data = {}
     cols = st.columns(2)
 
+    # Automatically create form fields from model features
     for i, feature in enumerate(feature_names):
         with cols[i % 2]:
             input_data[feature] = st.number_input(feature, value=0.0)
@@ -117,35 +118,34 @@ with right:
 
     if predict:
 
+        # Scale input
         input_scaled = scaler.transform(input_df)
 
-        # Get probability
+        # Use probability
         if hasattr(model, "predict_proba"):
             probability = model.predict_proba(input_scaled)[0][1]
         else:
             probability = 0.5
 
-        # 🔥 Custom threshold (Adjusted)
-        threshold = 0.30
+        # Custom threshold
+        threshold = 0.35
         prediction = 1 if probability > threshold else 0
 
-        # Debug probability
+        # Debug Probability
         st.write("Raw Probability:", round(probability, 4))
 
-        # 🔥 Adjusted Risk Classification (based on 0.30–0.38 range)
-        if probability < 0.25:
+        # Risk Level
+        if probability < 0.30:
             risk = "Low"
             recommendation = "Employee is stable. Maintain engagement."
             color = "#16a34a"
-
-        elif probability < 0.40:
+        elif probability < 0.60:
             risk = "Medium"
-            recommendation = "Moderate attrition risk. Monitor employee."
+            recommendation = "Monitor performance and increase engagement."
             color = "#f59e0b"
-
         else:
             risk = "High"
-            recommendation = "High attrition risk. HR intervention required."
+            recommendation = "Immediate HR intervention recommended."
             color = "#ef4444"
 
         # KPI Cards
