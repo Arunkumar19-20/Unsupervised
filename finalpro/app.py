@@ -1,6 +1,6 @@
 # ==========================================================
 # TEAM 8 – Employee Attrition Prediction App
-# FINAL AI-Powered Smart Dashboard UI (Label Form Version)
+# FINAL AI-Powered Smart Dashboard UI (Improved Prediction)
 # ==========================================================
 
 import streamlit as st
@@ -89,7 +89,7 @@ except Exception as e:
 left, right = st.columns([2, 1])
 
 # ==========================================================
-# LEFT SIDE – LABEL FORM INPUT
+# LEFT SIDE – EMPLOYEE FORM
 # ==========================================================
 
 with left:
@@ -129,7 +129,7 @@ with left:
         "JobSatisfaction": job_satisfaction
     }
 
-    # Fill missing features automatically
+    # Fill missing features
     for feature in feature_names:
         if feature not in input_data:
             input_data[feature] = 0
@@ -141,20 +141,28 @@ with left:
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ==========================================================
-# RIGHT SIDE – AI INSIGHTS
+# RIGHT SIDE – AI INSIGHTS (IMPROVED LOGIC)
 # ==========================================================
 
 with right:
     st.markdown('<div class="card"><h3>📊 AI Insights</h3>', unsafe_allow_html=True)
 
     if predict:
-        input_scaled = scaler.transform(input_df)
-        prediction = model.predict(input_scaled)[0]
 
+        input_scaled = scaler.transform(input_df)
+
+        # Always use probability
         if hasattr(model, "predict_proba"):
             probability = model.predict_proba(input_scaled)[0][1]
         else:
             probability = 0.5
+
+        # 🔥 Custom threshold (more sensitive)
+        threshold = 0.35
+        prediction = 1 if probability > threshold else 0
+
+        # Debug Probability
+        st.write("Raw Probability:", round(probability, 4))
 
         # Risk Classification
         if probability < 0.30:
