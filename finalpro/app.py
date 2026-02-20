@@ -1,6 +1,6 @@
 # ==========================================================
 # TEAM 8 – Employee Attrition Prediction App
-# FINAL AI-Powered Smart Dashboard UI (Improved Prediction)
+# FINAL VERSION (Adjusted Risk Logic)
 # ==========================================================
 
 import streamlit as st
@@ -78,7 +78,7 @@ try:
     model = joblib.load(os.path.join(BASE_DIR, "team8_employee_model.pkl"))
     scaler = joblib.load(os.path.join(BASE_DIR, "team8_scaler.pkl"))
     feature_names = joblib.load(os.path.join(BASE_DIR, "team8_feature_names.pkl"))
-except Exception as e:
+except Exception:
     st.error("❌ Model files not found! Keep all .pkl files in same folder.")
     st.stop()
 
@@ -89,59 +89,27 @@ except Exception as e:
 left, right = st.columns([2, 1])
 
 # ==========================================================
-# LEFT SIDE – EMPLOYEE FORM
+# LEFT SIDE – DYNAMIC FORM
 # ==========================================================
 
 with left:
     st.markdown('<div class="card"><h3>📋 Employee Information Form</h3>', unsafe_allow_html=True)
 
-    col1, col2 = st.columns(2)
+    input_data = {}
+    cols = st.columns(2)
 
-    # -------- Personal Details --------
-    with col1:
-        age = st.slider("Age", 18, 60, 30)
-        distance = st.number_input("Distance From Home", min_value=0, value=5)
-        education = st.selectbox("Education Level (1-5)", [1,2,3,4,5])
-        job_level = st.selectbox("Job Level (1-5)", [1,2,3,4,5])
-        monthly_income = st.number_input("Monthly Income", min_value=1000, value=5000)
+    for i, feature in enumerate(feature_names):
+        with cols[i % 2]:
+            input_data[feature] = st.number_input(feature, value=0.0)
 
-    # -------- Work Details --------
-    with col2:
-        years_company = st.number_input("Years At Company", min_value=0, value=5)
-        years_role = st.number_input("Years In Current Role", min_value=0, value=3)
-        years_promotion = st.number_input("Years Since Last Promotion", min_value=0, value=1)
-        overtime = st.selectbox("OverTime", ["No", "Yes"])
-        job_satisfaction = st.selectbox("Job Satisfaction (1-4)", [1,2,3,4])
-
-    overtime = 1 if overtime == "Yes" else 0
-
-    # Create input dictionary
-    input_data = {
-        "Age": age,
-        "DistanceFromHome": distance,
-        "Education": education,
-        "JobLevel": job_level,
-        "MonthlyIncome": monthly_income,
-        "YearsAtCompany": years_company,
-        "YearsInCurrentRole": years_role,
-        "YearsSinceLastPromotion": years_promotion,
-        "OverTime": overtime,
-        "JobSatisfaction": job_satisfaction
-    }
-
-    # Fill missing features
-    for feature in feature_names:
-        if feature not in input_data:
-            input_data[feature] = 0
-
-    input_df = pd.DataFrame([input_data])[feature_names]
+    input_df = pd.DataFrame([input_data])
 
     predict = st.button("🚀 Run AI Prediction")
 
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ==========================================================
-# RIGHT SIDE – AI INSIGHTS (IMPROVED LOGIC)
+# RIGHT SIDE – AI INSIGHTS
 # ==========================================================
 
 with right:
@@ -151,31 +119,33 @@ with right:
 
         input_scaled = scaler.transform(input_df)
 
-        # Always use probability
+        # Get probability
         if hasattr(model, "predict_proba"):
             probability = model.predict_proba(input_scaled)[0][1]
         else:
             probability = 0.5
 
-        # 🔥 Custom threshold (more sensitive)
-        threshold = 0.35
+        # 🔥 Custom threshold (Adjusted)
+        threshold = 0.30
         prediction = 1 if probability > threshold else 0
 
-        # Debug Probability
+        # Debug probability
         st.write("Raw Probability:", round(probability, 4))
 
-        # Risk Classification
-        if probability < 0.30:
+        # 🔥 Adjusted Risk Classification (based on 0.30–0.38 range)
+        if probability < 0.25:
             risk = "Low"
             recommendation = "Employee is stable. Maintain engagement."
             color = "#16a34a"
-        elif probability < 0.60:
+
+        elif probability < 0.40:
             risk = "Medium"
-            recommendation = "Monitor performance and increase engagement."
+            recommendation = "Moderate attrition risk. Monitor employee."
             color = "#f59e0b"
+
         else:
             risk = "High"
-            recommendation = "Immediate HR intervention recommended."
+            recommendation = "High attrition risk. HR intervention required."
             color = "#ef4444"
 
         # KPI Cards
